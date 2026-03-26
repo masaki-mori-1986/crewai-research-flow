@@ -1,0 +1,16 @@
+[project]
+name = "first-multi-agent"
+version = "0.1.0"
+description = "CrewAI ベースの情報収集マルチエージェント（初期骨格）"
+requires-python = ">=3.12"
+dependencies = [
+    "crewai[litellm]>=1.11.1",
+    "pydantic>=2.11.10",
+    "python-dotenv>=1.1.1",
+]
+
+[project.scripts]
+research = "first_multi_agent.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/first_multi_agent"]
