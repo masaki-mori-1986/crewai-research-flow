@@ -41,7 +41,7 @@ def main() -> None:
 
     if result.final_plan:
         print("\n[Main] 最終計画:\n")
-        print(result.final_plan)
+        print(flow.render_plan(result.final_plan))
 
 
 if __name__ == "__main__":

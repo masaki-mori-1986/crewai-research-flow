@@ -16,9 +16,44 @@ class ReviewVerdict(str, Enum):
     NEEDS_IMPROVEMENT = "needs_improvement"
 
 
+class PlanTopic(BaseModel):
+    """調査トピック単位の計画"""
+    name: str = Field(description="トピック名")
+    questions: List[str] = Field(
+        default_factory=list,
+        description="このトピックで答えるべき問い",
+    )
+    information_to_collect: List[str] = Field(
+        default_factory=list,
+        description="このトピックで収集すべき情報",
+    )
+
+
+class PlanStep(BaseModel):
+    """実行可能な調査ステップ"""
+    step_number: int = Field(description="ステップ番号")
+    action: str = Field(description="実行する行動")
+    method: str = Field(description="行動の進め方")
+    expected_output: str = Field(description="このステップで得る成果")
+
+
 class Plan(BaseModel):
     """計画生成の出力契約"""
-    content: str = Field(description="生成された計画の本文")
+    objective: str = Field(description="調査の目的")
+    scope: str = Field(description="調査の範囲")
+    key_questions: List[str] = Field(
+        default_factory=list,
+        description="調査全体で答えるべき主要な問い",
+    )
+    topics: List[PlanTopic] = Field(
+        default_factory=list,
+        description="主要トピックごとの調査計画",
+    )
+    steps: List[PlanStep] = Field(
+        default_factory=list,
+        description="実行順の調査ステップ",
+    )
+    deliverable_format: str = Field(description="想定する成果物の形式")
 
 
 class ImprovementRequest(BaseModel):
@@ -52,7 +87,7 @@ class Feedback(BaseModel):
 class FlowResult(BaseModel):
     """Flow の最終出力契約"""
     accepted: bool = Field(description="計画が受け入れられたか")
-    final_plan: Optional[str] = Field(default=None, description="最終的な計画")
+    final_plan: Optional[Plan] = Field(default=None, description="最終的な計画")
     attempts: int = Field(description="試行回数")
     termination_reason: str = Field(
         description="終了理由（accepted / max_attempts_reached）"
