@@ -17,13 +17,34 @@ def build_planning_task(planner: Agent, feedback: Optional[Feedback] = None) -> 
     """
     if feedback is None:
         description = (
-            "以下の要求に対して、情報収集計画を生成してください。\n\n"
+            "以下の要求に対して、構造化された情報収集計画を生成してください。\n\n"
             "要求: {user_request}\n\n"
-            "計画には以下を含めてください:\n"
-            "- 調査対象の明確な定義\n"
-            "- 具体的な調査ステップ（順序と方法）\n"
-            "- 各ステップで収集する情報の種類\n"
-            "- 成果物の形式"
+            "出力は JSON のみとし、説明文・コードフェンス・前置き・後書きは含めないでください。\n"
+            "以下のスキーマに厳密に従ってください:\n"
+            "{\n"
+            '  "objective": "調査の目的",\n'
+            '  "scope": "調査の範囲",\n'
+            '  "key_questions": ["主要な問い1", "主要な問い2"],\n'
+            '  "topics": [\n'
+            "    {\n"
+            '      "name": "トピック名",\n'
+            '      "questions": ["このトピックで答える問い"],\n'
+            '      "information_to_collect": ["収集すべき情報"]\n'
+            "    }\n"
+            "  ],\n"
+            '  "steps": [\n'
+            "    {\n"
+            '      "step_number": 1,\n'
+            '      "action": "実行する行動",\n'
+            '      "method": "進め方",\n'
+            '      "expected_output": "得られる成果"\n'
+            "    }\n"
+            "  ],\n"
+            '  "deliverable_format": "成果物の形式"\n'
+            "}\n\n"
+            "`steps` は必ずトップレベルの配列にしてください。"
+            "`topics[].information_to_collect` には文字列だけを入れてください。\n"
+            "計画は小さく実用的にまとめてください。"
         )
     else:
         improvement_text = "\n".join(
@@ -31,18 +52,43 @@ def build_planning_task(planner: Agent, feedback: Optional[Feedback] = None) -> 
             for r in feedback.improvement_requests
         )
         description = (
-            "以下の改善フィードバックをもとに、情報収集計画を改訂してください。\n\n"
+            "以下の改善フィードバックをもとに、構造化された情報収集計画を改訂してください。\n\n"
             f"元の要求: {feedback.original_request}\n\n"
             f"前回の計画:\n{feedback.current_plan}\n\n"
             f"改善要求:\n{improvement_text}\n\n"
-            "改善要求をすべて反映した計画を生成してください。"
+            "改善要求をすべて反映したうえで、JSON のみを出力してください。\n"
+            "説明文・コードフェンス・前置き・後書きは含めないでください。\n"
+            "出力スキーマ:\n"
+            "{\n"
+            '  "objective": "調査の目的",\n'
+            '  "scope": "調査の範囲",\n'
+            '  "key_questions": ["主要な問い1", "主要な問い2"],\n'
+            '  "topics": [\n'
+            "    {\n"
+            '      "name": "トピック名",\n'
+            '      "questions": ["このトピックで答える問い"],\n'
+            '      "information_to_collect": ["収集すべき情報"]\n'
+            "    }\n"
+            "  ],\n"
+            '  "steps": [\n'
+            "    {\n"
+            '      "step_number": 1,\n'
+            '      "action": "実行する行動",\n'
+            '      "method": "進め方",\n'
+            '      "expected_output": "得られる成果"\n'
+            "    }\n"
+            "  ],\n"
+            '  "deliverable_format": "成果物の形式"\n'
+            "}\n\n"
+            "`steps` は必ずトップレベルの配列にしてください。"
+            "`topics[].information_to_collect` には文字列だけを入れてください。"
         )
 
     return Task(
         description=description,
         expected_output=(
-            "具体的・網羅的・実行可能な情報収集計画。"
-            "計画本文をそのままテキストで出力すること。"
+            "Plan スキーマに一致する妥当な JSON オブジェクトのみ。"
+            "有効な JSON であること。"
         ),
         agent=planner,
     )
